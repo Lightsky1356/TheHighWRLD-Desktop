@@ -1,0 +1,42 @@
+name: Build Linux (AppImage + deb)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps || npm install
+
+      - name: Build Linux AppImage + deb
+        run: npx electron-builder --linux --publish never
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: List artifacts
+        run: ls -lh release/*.AppImage release/*.deb
+
+      - name: Upload AppImage
+        uses: actions/upload-artifact@v4
+        with:
+          name: TheHighWRLD-Linux-AppImage
+          path: release/*.AppImage
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: TheHighWRLD-Linux-deb
+          path: release/*.deb

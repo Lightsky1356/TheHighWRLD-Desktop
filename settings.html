@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TheHighWRLD Settings</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: #0f0f20; color: #e6e6f0; padding: 22px 24px; height: 100vh; user-select: none; }
+    h1 { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .sub { font-size: 12px; color: #8a8aa0; margin-bottom: 20px; }
+    .setting { display: flex; align-items: center; justify-content: space-between; background: #17172b; border: 1px solid #26263f; border-radius: 12px; padding: 14px 16px; gap: 16px; }
+    .setting-info .title { font-size: 14px; font-weight: 600; }
+    .setting-info .desc { font-size: 12px; color: #9a9ab0; margin-top: 3px; line-height: 1.4; }
+    .badge { display: inline-block; font-size: 9px; letter-spacing: .08em; font-weight: 700; color: #c084fc; border: 1px solid #7c3aed55; background: #7c3aed1a; padding: 2px 6px; border-radius: 6px; margin-top: 6px; }
+    .badge-green { color: #22c55e; border-color: #16a34a55; background: #16a34a1a; }
+    .switch { position: relative; width: 46px; height: 26px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #2a2a45; border-radius: 999px; transition: .2s; }
+    .slider::before { content: ""; position: absolute; height: 20px; width: 20px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: .2s; }
+    input:checked + .slider { background: #7c3aed; }
+    input:checked + .slider::before { transform: translateX(20px); }
+    .status { margin-top: 16px; font-size: 12px; color: #8a8aa0; line-height: 1.5; }
+    .status .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; }
+    .status .ok { background:#22c55e; } .status .off { background:#6b6b80; } .status .err { background:#ef4444; }
+    .foot { margin-top: 18px; font-size: 11px; color: #6b6b85; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <h1>Settings</h1>
+  <div class="sub">TheHighWRLD native app</div>
+
+  <div class="setting">
+    <div class="setting-info">
+      <div class="title">Keyboard Shortcuts</div>
+      <div class="desc">Media controls: Space (play/pause), arrows (volume), M (mute). Desktop (Windows, Mac, Linux) only.</div>
+      <span class="badge badge-green">DESKTOP ONLY</span>
+    </div>
+    <label class="switch"><input type="checkbox" id="ks-toggle" /><span class="slider"></span></label>
+  </div>
+
+  <div class="setting">
+    <div class="setting-info">
+      <div class="title">Discord Rich Presence</div>
+      <div class="desc">Display what you're listening to in the WRLD Player on your Discord profile. Default is Off.</div>
+      <span class="badge">NATIVE APP ONLY</span>
+    </div>
+    <label class="switch"><input type="checkbox" id="rp-toggle" /><span class="slider"></span></label>
+  </div>
+
+  <div class="status" id="status"><span class="dot off"></span><span id="status-text">Initializing…</span></div>
+  <div class="foot">Discord Rich Presence is Off by default — toggle On to activate. It only runs in the native app; the website and PWA never initialize Discord Rich Presence. Turning it Off immediately clears your Discord activity. Keyboard shortcuts work only on desktop platforms (Windows, Mac, Linux).</div>
+
+  <script>
+    const rpToggle = document.getElementById('rp-toggle');
+    const ksToggle = document.getElementById('ks-toggle');
+    const status = document.getElementById('status-text');
+    const dot = status.parentElement.querySelector('.dot');
+
+    function renderStatus(s) {
+      const enabled = !!s.enabled;
+      rpToggle.checked = enabled;
+      if (!enabled) { dot.className = 'dot off'; status.textContent = 'Off — Discord Rich Presence is disabled.'; }
+      else if (s.available && s.loggedIn) { dot.className = 'dot ok'; status.textContent = 'Connected — Rich Presence active.'; }
+      else { dot.className = 'dot err'; status.textContent = 'On, but Discord is unavailable (not running?). Will not retry until toggled.'; }
+    }
+
+    window.highwrld.getStatus().then(s => {
+      if (s && typeof s.isNative === 'undefined') { /* safety */ }
+      renderStatus(s || { enabled: false });
+      if (s && typeof s.keyboardShortcutsEnabled === 'boolean') ksToggle.checked = s.keyboardShortcutsEnabled;
+    });
+    window.highwrld.onStatus(renderStatus);
+
+    rpToggle.addEventListener('change', () => { window.highwrld.setEnabled(rpToggle.checked).then(renderStatus); });
+    ksToggle.addEventListener('change', () => { window.highwrld.setKeyboardShortcutsEnabled(ksToggle.checked).then(ok => { if (ok) { ksToggle.style.outline = '2px solid #22c55e'; setTimeout(() => { ksToggle.style.outline = ''; }, 600); } }); });
+  </script>
+</body>
+</html>
