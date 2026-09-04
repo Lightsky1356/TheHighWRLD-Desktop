@@ -11,6 +11,7 @@ let settingsWin = null;
 let keyboardShortcutsEnabled = false;
 
 app.whenReady().then(() => {
+  keyboardShortcutsEnabled = !!rpc.getStatus().keyboardShortcutsEnabled;
   createWindow();
   Menu.setApplicationMenu(null);
   app.on('activate', () => {
