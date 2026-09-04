@@ -11,7 +11,7 @@ let settingsWin = null;
 let keyboardShortcutsEnabled = false;
 
 app.whenReady().then(() => {
-  keyboardShortcutsEnabled = !!rpc.getStatus().keyboardShortcutsEnabled;
+  try { keyboardShortcutsEnabled = !!rpc.getStatus().keyboardShortcutsEnabled; } catch(e) { keyboardShortcutsEnabled = false; }
   createWindow();
   Menu.setApplicationMenu(null);
   app.on('activate', () => {
@@ -60,6 +60,7 @@ function createWindow() {
 
   win.webContents.on('did-finish-load', () => {
     rpc.attach(win);
+    broadcastStatus();
   });
 
   win.webContents.on('before-input-event', (event, input) => {
@@ -121,7 +122,7 @@ ipcMain.handle('rp:set-keyboard-shortcuts', async (_evt, on) => {
   return { enabled: keyboardShortcutsEnabled, isNative: true };
 });
 
-ipcMain.handle('rp:get-keyboard-shortcuts', () => ({ enabled: keyboardShortcutsEnabled, isNative: true }));
+ipcMain.handle('rp:get-keyboard-shortcuts', () => ({ enabled: !!rpc.getStatus().keyboardShortcutsEnabled, isNative: true }));
 
 ipcMain.on('rp:open-settings', () => openSettings());
 
