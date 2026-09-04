@@ -1,4 +1,4 @@
-name: Build Linux (AppImage + deb)
+name: Build (Linux + macOS)
 
 on:
   workflow_dispatch:
