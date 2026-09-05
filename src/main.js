@@ -129,6 +129,7 @@ ipcMain.on('rp:open-settings', () => openSettings());
 let lastPage = null;
 setInterval(() => {
   if (!win || win.isDestroyed()) return;
+  broadcastStatus();
   win.webContents.executeJavaScript(`(() => { const e = document.querySelector('.app-page.active'); return e ? e.id : 'home'; })()`, true)
-    .then((id) => { if (id && id !== lastPage) { lastPage = id; broadcastStatus(); } }).catch(() => {});
+    .then((id) => { if (id && id !== lastPage) { lastPage = id; } }).catch(() => {});
 }, 3000);

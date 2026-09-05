@@ -290,6 +290,7 @@ async function reconnect() {
       console.error('[DRP] reconnect: client error:', err && err.message ? err.message : err);
       loggedIn = false;
       available = false;
+      scheduleReconnect();
     });
 
     // Enable debug logging from the library to surface the exact IPC flow/errors.
